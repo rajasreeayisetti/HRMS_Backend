@@ -63,7 +63,35 @@ seedAdmin();
 
 const app = express();
 
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+const allowedOrigins = ['http://localhost:5173'];
+const frontendUrl = process.env.FRONTEND_URL || process.env.frontend_url;
+if (frontendUrl) {
+    allowedOrigins.push(frontendUrl);
+    try {
+        const url = new URL(frontendUrl);
+        allowedOrigins.push(url.origin);
+    } catch (e) {}
+}
+
+// Clean and deduplicate origins (trim whitespace and remove trailing slashes)
+const cleanOrigins = [...new Set(allowedOrigins.map(o => o.trim().replace(/\/$/, '')))];
+console.log('Configured CORS origins:', cleanOrigins);
+
+app.use(cors({
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps, Postman, curl)
+        if (!origin) return callback(null, true);
+        
+        const cleanOrigin = origin.trim().replace(/\/$/, '');
+        if (cleanOrigins.includes(cleanOrigin)) {
+            return callback(null, true);
+        } else {
+            console.log(`[CORS Request Blocked] Origin: "${origin}" is not in allowed list:`, cleanOrigins);
+            return callback(null, false);
+        }
+    },
+    credentials: true
+}));
 app.use(express.json());
 app.use(cookieParser());
 app.use(morgan('dev'));
