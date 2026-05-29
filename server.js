@@ -19,7 +19,7 @@ const seedAdmin = async () => {
         if (!adminExists) {
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash('password123', salt);
-            
+
             await supabase
                 .from('users')
                 .insert([{
@@ -28,7 +28,7 @@ const seedAdmin = async () => {
                     password: hashedPassword,
                     role: 'admin'
                 }]);
-                
+
             console.log('Admin seeded in Supabase: admin@example.com / password123');
         }
         // 2. Regular Company User
@@ -41,7 +41,7 @@ const seedAdmin = async () => {
         if (!userExists2) {
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash('password123', salt);
-            
+
             await supabase
                 .from('users')
                 .insert([{
@@ -50,7 +50,7 @@ const seedAdmin = async () => {
                     password: hashedPassword,
                     role: 'company'
                 }]);
-                
+
             console.log('Company User seeded: company@example.com OR Company_101 / password123');
         }
     } catch (err) {

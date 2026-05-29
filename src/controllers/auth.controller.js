@@ -36,10 +36,15 @@ exports.register = async (req, res) => {
 
         if (user) {
             const token = generateToken(user.id);
-            res.cookie('token', token, {
+            const cookieOptions = {
                 httpOnly: true,
                 maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
-            });
+            };
+            if (process.env.NODE_ENV === 'production' || process.env.FRONTEND_URL) {
+                cookieOptions.secure = true;
+                cookieOptions.sameSite = 'none';
+            }
+            res.cookie('token', token, cookieOptions);
             res.status(201).json({
                 success: true,
                 user: { id: user.id, name: user.name, email: user.email, role: user.role },
@@ -101,10 +106,15 @@ exports.login = async (req, res) => {
         }
 
         const token = generateToken(finalUserLayer.id);
-        res.cookie('token', token, {
+        const cookieOptions = {
             httpOnly: true,
             maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
-        });
+        };
+        if (process.env.NODE_ENV === 'production' || process.env.FRONTEND_URL) {
+            cookieOptions.secure = true;
+            cookieOptions.sameSite = 'none';
+        }
+        res.cookie('token', token, cookieOptions);
 
         res.json({
             success: true,
@@ -118,10 +128,15 @@ exports.login = async (req, res) => {
 };
 
 exports.logout = (req, res) => {
-    res.cookie('token', 'none', {
+    const cookieOptions = {
         expires: new Date(Date.now() + 10 * 1000),
         httpOnly: true
-    });
+    };
+    if (process.env.NODE_ENV === 'production' || process.env.FRONTEND_URL) {
+        cookieOptions.secure = true;
+        cookieOptions.sameSite = 'none';
+    }
+    res.cookie('token', 'none', cookieOptions);
     res.status(200).json({ success: true, message: 'Logged out successfully' });
 };
 
